@@ -1,20 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+
+type Mode = "Simple" | "Advanced";
 
 export default function CreatePage() {
+  const [mode, setMode] = useState<Mode>("Simple");
+
   const [title, setTitle] = useState("");
   const [lyrics, setLyrics] = useState("");
+
   const [language, setLanguage] = useState("Telugu");
   const [genre, setGenre] = useState("Melody");
   const [vocal, setVocal] = useState("Auto");
+
+  const [emotion, setEmotion] = useState("Emotional");
+  const [energy, setEnergy] = useState(60);
+  const [bpm, setBpm] = useState(90);
+  const [key, setKey] = useState("Auto");
+  const [scale, setScale] = useState("Auto");
+
+  const [duration, setDuration] = useState("Auto");
+  const [singerSkill, setSingerSkill] = useState(70);
+
+  const [melodyLock, setMelodyLock] = useState(false);
+  const [referenceStrength, setReferenceStrength] = useState(70);
+  const [pronunciation, setPronunciation] = useState(true);
+  const [instrumental, setInstrumental] = useState(false);
+
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  async function handleGenerate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
+  async function handleGenerate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     setMessage("");
+    setError("");
+
+    if (!title.trim()) {
+      setError("Please enter a song title.");
+      return;
+    }
+
+    if (!instrumental && !lyrics.trim()) {
+      setError("Please enter lyrics.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch("/api/generate/music", {
@@ -23,24 +59,47 @@ export default function CreatePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title,
-          lyrics,
+          title: title.trim(),
+          lyrics: lyrics.trim(),
           language,
           genre,
           vocal,
+
+          mode,
+
+          emotion,
+          energy,
+          bpm,
+          key,
+          scale,
+
+          duration,
+          singerSkill,
+
+          melodyLock,
+          referenceStrength,
+          pronunciation,
+          instrumental,
+
+          referenceFileName: referenceFile?.name || null,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "Generation failed");
+        throw new Error(data?.error || "Generation request failed.");
       }
 
-      setMessage("Generation request submitted successfully.");
-    } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Something went wrong."
+        data?.message ||
+          "Generation request submitted successfully. Your song will appear in My Library when ready."
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
       );
     } finally {
       setLoading(false);
@@ -48,103 +107,421 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-10 text-white">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold">Create Your Song</h1>
+    <main className="min-h-screen bg-black text-white px-4 py-8 md:px-8">
+      <div className="mx-auto max-w-5xl">
+        {/* Header */}
+        <div className="mb-8">
+          <p className="text-sm font-medium text-violet-400">
+            LOKANADH MUSIC AI
+          </p>
 
-        <p className="mt-2 text-gray-400">
-          Your Voice. Your Lyrics. Your Music. Your AI Studio.
-        </p>
+          <h1 className="mt-2 text-4xl font-bold tracking-tight md:text-5xl">
+            Create Your Song
+          </h1>
 
-        <form
-          onSubmit={handleGenerate}
-          className="mt-8 space-y-5 rounded-2xl border border-white/10 bg-white/5 p-6"
-        >
-          <div>
-            <label className="mb-2 block text-sm text-gray-300">
-              Song Title
-            </label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter song title"
-              required
-              className="w-full rounded-xl bg-white/10 px-4 py-3 text-white outline-none"
-            />
-          </div>
+          <p className="mt-3 max-w-2xl text-gray-400">
+            Your Voice. Your Lyrics. Your Music. Your AI Studio.
+          </p>
+        </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-gray-300">
-              Lyrics
-            </label>
-            <textarea
-              value={lyrics}
-              onChange={(e) => setLyrics(e.target.value)}
-              placeholder="Write or paste your lyrics..."
-              required
-              rows={10}
-              className="w-full rounded-xl bg-white/10 px-4 py-3 text-white outline-none"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="rounded-xl bg-white/10 px-4 py-3 text-white outline-none"
+        {/* Mode selector */}
+        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMode("Simple")}
+              className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                mode === "Simple"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-gray-400 hover:bg-white/10 hover:text-white"
+              }`}
             >
-              <option className="bg-black">Telugu</option>
-              <option className="bg-black">Hindi</option>
-              <option className="bg-black">Tamil</option>
-              <option className="bg-black">Kannada</option>
-              <option className="bg-black">Malayalam</option>
-              <option className="bg-black">English</option>
-            </select>
+              Simple Mode
+            </button>
 
-            <select
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="rounded-xl bg-white/10 px-4 py-3 text-white outline-none"
+            <button
+              type="button"
+              onClick={() => setMode("Advanced")}
+              className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                mode === "Advanced"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-gray-400 hover:bg-white/10 hover:text-white"
+              }`}
             >
-              <option className="bg-black">Melody</option>
-              <option className="bg-black">Folk</option>
-              <option className="bg-black">Devotional</option>
-              <option className="bg-black">Cinematic</option>
-              <option className="bg-black">Pop</option>
-              <option className="bg-black">Rock</option>
-              <option className="bg-black">Rap</option>
-              <option className="bg-black">EDM</option>
-            </select>
-
-            <select
-              value={vocal}
-              onChange={(e) => setVocal(e.target.value)}
-              className="rounded-xl bg-white/10 px-4 py-3 text-white outline-none"
-            >
-              <option className="bg-black">Auto</option>
-              <option className="bg-black">Male</option>
-              <option className="bg-black">Female</option>
-              <option className="bg-black">Duet</option>
-              <option className="bg-black">Group</option>
-              <option className="bg-black">Choir</option>
-            </select>
+              Advanced Mode
+            </button>
           </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-white px-5 py-3 font-semibold text-black disabled:opacity-50"
-          >
-            {loading ? "Submitting..." : "Generate Song"}
-          </button>
+        <form onSubmit={handleGenerate} className="space-y-6">
+          {/* Basic information */}
+          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-7">
+            <h2 className="text-xl font-semibold">Song Details</h2>
 
-          {message && (
-            <p className="rounded-xl bg-white/10 p-4 text-sm text-gray-300">
-              {message}
+            <p className="mt-1 text-sm text-gray-500">
+              Start with your song idea, lyrics and musical direction.
             </p>
+
+            <div className="mt-6 space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">
+                  Song Title
+                </label>
+
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter song title"
+                  className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-gray-500 focus:border-violet-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">
+                  Lyrics
+                </label>
+
+                <textarea
+                  value={lyrics}
+                  onChange={(e) => setLyrics(e.target.value)}
+                  placeholder="Write or paste your lyrics here..."
+                  rows={10}
+                  disabled={instrumental}
+                  className="w-full resize-y rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-gray-500 focus:border-violet-500 disabled:opacity-50"
+                />
+
+                <div className="mt-2 flex justify-between text-xs text-gray-500">
+                  <span>
+                    {instrumental
+                      ? "Lyrics disabled for instrumental mode."
+                      : "Use your own original lyrics or lyrics you have permission to use."}
+                  </span>
+
+                  <span>{lyrics.length} characters</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Music style */}
+          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-7">
+            <h2 className="text-xl font-semibold">Music Style</h2>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm text-gray-300">
+                  Language
+                </label>
+
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                >
+                  <option className="bg-black">Telugu</option>
+                  <option className="bg-black">Hindi</option>
+                  <option className="bg-black">Tamil</option>
+                  <option className="bg-black">Kannada</option>
+                  <option className="bg-black">Malayalam</option>
+                  <option className="bg-black">English</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-gray-300">
+                  Genre
+                </label>
+
+                <select
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                >
+                  <option className="bg-black">Melody</option>
+                  <option className="bg-black">Folk</option>
+                  <option className="bg-black">Devotional</option>
+                  <option className="bg-black">Cinematic</option>
+                  <option className="bg-black">Pop</option>
+                  <option className="bg-black">Rock</option>
+                  <option className="bg-black">Rap</option>
+                  <option className="bg-black">Hip-Hop</option>
+                  <option className="bg-black">EDM</option>
+                  <option className="bg-black">Classical</option>
+                  <option className="bg-black">Acoustic</option>
+                  <option className="bg-black">Lo-Fi</option>
+                  <option className="bg-black">Fusion</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-gray-300">
+                  Vocal
+                </label>
+
+                <select
+                  value={vocal}
+                  onChange={(e) => setVocal(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                >
+                  <option className="bg-black">Auto</option>
+                  <option className="bg-black">Male</option>
+                  <option className="bg-black">Female</option>
+                  <option className="bg-black">Youthful</option>
+                  <option className="bg-black">Duet</option>
+                  <option className="bg-black">Group</option>
+                  <option className="bg-black">Choir</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <label className="mb-2 block text-sm text-gray-300">
+                Emotion
+              </label>
+
+              <select
+                value={emotion}
+                onChange={(e) => setEmotion(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+              >
+                <option className="bg-black">Emotional</option>
+                <option className="bg-black">Happy</option>
+                <option className="bg-black">Romantic</option>
+                <option className="bg-black">Sad</option>
+                <option className="bg-black">Devotional</option>
+                <option className="bg-black">Energetic</option>
+                <option className="bg-black">Peaceful</option>
+                <option className="bg-black">Epic</option>
+                <option className="bg-black">Dramatic</option>
+                <option className="bg-black">Hopeful</option>
+              </select>
+            </div>
+          </section>
+
+          {/* Advanced */}
+          {mode === "Advanced" && (
+            <>
+              <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-7">
+                <h2 className="text-xl font-semibold">
+                  Advanced Music Controls
+                </h2>
+
+                <div className="mt-6 grid gap-6 md:grid-cols-2">
+                  <div>
+                    <div className="mb-2 flex justify-between">
+                      <label className="text-sm text-gray-300">
+                        Energy
+                      </label>
+                      <span className="text-sm text-violet-400">
+                        {energy}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={energy}
+                      onChange={(e) => setEnergy(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex justify-between">
+                      <label className="text-sm text-gray-300">
+                        Singer Skill
+                      </label>
+                      <span className="text-sm text-violet-400">
+                        {singerSkill}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={singerSkill}
+                      onChange={(e) =>
+                        setSingerSkill(Number(e.target.value))
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">
+                      BPM
+                    </label>
+
+                    <input
+                      type="number"
+                      min="40"
+                      max="220"
+                      value={bpm}
+                      onChange={(e) => setBpm(Number(e.target.value))}
+                      className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">
+                      Duration
+                    </label>
+
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                    >
+                      <option className="bg-black">Auto</option>
+                      <option className="bg-black">2 Minutes</option>
+                      <option className="bg-black">3 Minutes</option>
+                      <option className="bg-black">4 Minutes</option>
+                      <option className="bg-black">5 Minutes</option>
+                      <option className="bg-black">6 Minutes</option>
+                      <option className="bg-black">8 Minutes</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">
+                      Key
+                    </label>
+
+                    <select
+                      value={key}
+                      onChange={(e) => setKey(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                    >
+                      <option className="bg-black">Auto</option>
+                      <option className="bg-black">C</option>
+                      <option className="bg-black">C#</option>
+                      <option className="bg-black">D</option>
+                      <option className="bg-black">D#</option>
+                      <option className="bg-black">E</option>
+                      <option className="bg-black">F</option>
+                      <option className="bg-black">F#</option>
+                      <option className="bg-black">G</option>
+                      <option className="bg-black">G#</option>
+                      <option className="bg-black">A</option>
+                      <option className="bg-black">A#</option>
+                      <option className="bg-black">B</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">
+                      Scale
+                    </label>
+
+                    <select
+                      value={scale}
+                      onChange={(e) => setScale(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
+                    >
+                      <option className="bg-black">Auto</option>
+                      <option className="bg-black">Major</option>
+                      <option className="bg-black">Minor</option>
+                      <option className="bg-black">Harmonic Minor</option>
+                      <option className="bg-black">Melodic Minor</option>
+                      <option className="bg-black">Pentatonic</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              {/* Reference */}
+              <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-7">
+                <h2 className="text-xl font-semibold">
+                  Reference & Melody Control
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Add an audio reference when you want the AI pipeline to
+                  analyse musical characteristics.
+                </p>
+
+                <div className="mt-6">
+                  <label className="mb-2 block text-sm text-gray-300">
+                    Reference Audio
+                  </label>
+
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) =>
+                      setReferenceFile(e.target.files?.[0] || null)
+                    }
+                    className="w-full rounded-xl border border-dashed border-white/20 bg-white/5 px-4 py-4 text-sm text-gray-300"
+                  />
+
+                  {referenceFile && (
+                    <p className="mt-2 text-xs text-violet-400">
+                      Selected: {referenceFile.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-6 space-y-6">
+                  <div>
+                    <div className="mb-2 flex justify-between">
+                      <label className="text-sm text-gray-300">
+                        Reference Strength
+                      </label>
+
+                      <span className="text-sm text-violet-400">
+                        {referenceStrength}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={referenceStrength}
+                      onChange={(e) =>
+                        setReferenceStrength(Number(e.target.value))
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div>
+                      <p className="font-medium">Melody Lock</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Request stronger preservation of reference melodic
+                        characteristics when supported by the AI engine.
+                      </p>
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      checked={melodyLock}
+                      onChange={(e) => setMelodyLock(e.target.checked)}
+                      className="h-5 w-5"
+                    />
+                  </label>
+                </div>
+              </section>
+            </>
           )}
-        </form>
-      </div>
-    </main>
-  );
-          }
+
+          {/* Extra options */}
+          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-7">
+            <h2 className="text-xl font-semibold">Song Options</h2>
+
+            <div className="mt-5 space-y-4">
+              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
+                <div>
+                  <p className="font-medium">Telugu Pronunciation Assist</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Helps preserve intended pronunciation when supported by
+                    the selected language and engine.
+                  </p>
+                </div>
+
+                <input
+                  type="checkbox"
+        
