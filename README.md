@@ -2,45 +2,19 @@
 
 Your Voice. Your Lyrics. Your Music. Your AI Studio.
 
-## Vision
+## Phase 1
+- Next.js + TypeScript foundation
+- Landing page
+- Dashboard
+- Create Song UI
+- Library UI
+- Generation API contract
+- AI Music Engine adapter
+- Environment variable template
 
-LOKANADH MUSIC AI is an AI-powered music creation and production platform.
+## Important
+The Phase 1 endpoint does **not** fake audio. A real AI music worker/model must be connected before actual songs are produced.
 
-## Core Features
-
-- AI Song Generation
-- Lyrics to Music
-- My Voice Singer
-- Reference Audio
-- Melody Control
-- AI Music Studio
-- Remix
-- Extend
-- Repaint
-- Stem Separation
-- AI Mixing & Mastering
-- Music Video
-- Cover Art
-- Multi-language Music
-- Telugu-first Experience
-- Artist Library
-- Professional Export
-- Credits & Subscriptions
-- Admin Dashboard
-
-## Project Status
-
-Phase 1 - Project Foundation
-
-## Technology
-
-- Next.js
-- TypeScript
-- React
-- Tailwind CSS
-- Supabase
-- AI Music Engine
-
-## Goal
-
-Build a professional AI music creation platform where users can create, edit, produce and export original music.
+## Run
+npm install
+npm run dev
