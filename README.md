@@ -1,1 +1,25 @@
-# LOKANADH MUSIC AI — Pro Ready Starter\n\nTagline: Your Voice. Your Lyrics. Your Music. Your AI Studio.\n\nResponsive Next.js 15 + React 19 music-studio starter with Home, Create, Dashboard, Library, Login and Signup routes.\n\n## Important\nThis website does not include a deployed GPU model or music-model weights. The generation API intentionally returns HTTP 503 until a real ACE-Step or compatible GPU service is configured using `MUSIC_ENGINE_URL`. It never pretends audio was generated.\n\n## Deploy\n1. Upload the project files to `Lokanadham-lab/lokanadh-music-ai` on `main`.\n2. In Vercel → Project Settings → Environment Variables, set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.\n3. Only after deploying a real GPU API, set `MUSIC_ENGINE_URL` and `MUSIC_ENGINE_API_KEY`.\n4. Redeploy and check build logs.\n\nNever commit Supabase secret/service-role keys. Login/signup UI needs Supabase Auth form handlers before it is production-functional.\n
+LOKANADH MUSIC AI
+
+Your Voice. Your Lyrics. Your Music. Your AI Studio.
+
+A Telugu-first AI music studio project.
+
+Features
+
+- Create Song — Simple and Advanced modes
+- Telugu and multilingual lyrics workflow
+- Vocal, genre, BPM and melody controls
+- Dashboard and My Library
+- Responsive mobile-friendly interface
+- Supabase integration foundation
+- Vercel deployment support
+
+Important
+
+Real AI music generation requires a connected GPU music engine. Until it is configured, song generation will not produce audio.
+
+Setup
+
+Configure the required environment variables in Vercel before deployment.
+
+Never upload secret API keys to GitHub.
