@@ -1,7 +1,0 @@
-@import "tailwindcss";
-:root{--bg:#07070a;--card:#111118}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:#f7f7fb}
-body{min-height:100vh;font-family:Arial,Helvetica,sans-serif}
-button,input,textarea,select{font:inherit}
-a{text-decoration:none;color:inherit}
